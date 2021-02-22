@@ -1,6 +1,11 @@
 # delete-dynamodb-items
 Bulk delete items from a DynamoDB table.
 
+## Download
+
+You can get `delete-dynamodb-items` from the [releases](https://github.com/halprin/delete-dynamodb-items/releases)
+section of this GitHub repository.  There you will find downloads for your operating system and CPU architecture.
+
 ## Usage
 
 _**Warning**: running this command will result in all the items in the specified table to be deleted immediately!  There
