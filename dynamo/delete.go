@@ -29,8 +29,8 @@ func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableName st
 		return err
 	}
 
-	goroutinePool, err := ants.NewPool(concurrency)
-	//goroutinePool, err := ants.NewPool(concurrency, ants.WithMaxBlockingTasks(math.MaxInt64))
+	//goroutinePool, err := ants.NewPool(concurrency)
+	goroutinePool, err := ants.NewPool(concurrency, ants.WithMaxBlockingTasks(300), ants.WithPreAlloc(true))
 	if err != nil {
 		log.Println("Unable spin-up goroutine pool")
 		return err
@@ -53,8 +53,8 @@ func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableName st
 			return err
 		}
 
-		log.Println("Sleeping for 5 seconds")
-		time.Sleep(time.Duration(3) * time.Second)
+		//log.Println("Sleeping for 5 seconds")
+		//time.Sleep(time.Duration(3) * time.Second)
 	}
 
 	log.Println("Waiting for all deletion goroutines to complete")
