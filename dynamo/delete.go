@@ -3,6 +3,7 @@ package dynamo
 import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/halprin/delete-dynamodb-items/parallel"
+	"github.com/panjf2000/ants/v2"
 	"log"
 	"math/rand"
 	"time"
@@ -22,13 +23,41 @@ func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableName st
 
 	dynamoItemsChunks := chunkItems(dynamoItems)
 
+	concurrency, err := determineConcurrency(tableName)
+	if err != nil {
+		log.Println("Unable determine the concurrency")
+		return err
+	}
+
+	goroutinePool, err := ants.NewPool(concurrency)
+	//goroutinePool, err := ants.NewPool(concurrency, ants.WithMaxBlockingTasks(math.MaxInt64))
+	if err != nil {
+		log.Println("Unable spin-up goroutine pool")
+		return err
+	}
+	defer goroutinePool.Release()
+
 	var errorChannels []chan error
 
 	for _, currentItemsChunk := range dynamoItemsChunks {
-		errorChannel := make(chan error)
+
+		errorChannel := make(chan error, 1)
 		errorChannels = append(errorChannels, errorChannel)
-		go deleteChunkGoroutine(currentItemsChunk, tableName, errorChannel)
+
+		log.Println("submitting a deletion request to the pool")
+		err = goroutinePool.Submit(func() {
+			deleteChunkGoroutine(currentItemsChunk, tableName, errorChannel)
+		})
+		if err != nil {
+			log.Println("Failed to submit function to goroutine pool")
+			return err
+		}
+
+		log.Println("Sleeping for 5 seconds")
+		time.Sleep(time.Duration(3) * time.Second)
 	}
+
+	log.Println("Waiting for all deletion goroutines to complete")
 
 	for errorFromGoroutine := range parallel.MergeErrorChannels(errorChannels) {
 		if errorFromGoroutine != nil {

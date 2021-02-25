@@ -42,7 +42,12 @@ func determineConcurrency(tableName string) (int, error) {
 }
 
 func isOnDemand(describeTable *dynamodb.DescribeTableOutput) bool {
-	return *describeTable.Table.BillingModeSummary.BillingMode == dynamodb.BillingModePayPerRequest
+	billingModeSummary := describeTable.Table.BillingModeSummary
+	if billingModeSummary != nil {
+		return *describeTable.Table.BillingModeSummary.BillingMode == dynamodb.BillingModePayPerRequest
+	}
+
+	return getWriteCapacityUnits(describeTable) == 0
 }
 
 func getWriteCapacityUnits(describeTable *dynamodb.DescribeTableOutput) int64 {
