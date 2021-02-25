@@ -1,10 +1,10 @@
 package dynamo
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/halprin/delete-dynamodb-items/parallel"
 	"log"
+	"math/rand"
 	"time"
 )
 
@@ -62,16 +62,10 @@ func deleteChunk(currentItemsChunk []map[string]*dynamodb.AttributeValue, tableN
 }
 
 func getTableKeys(tableName string) ([]*dynamodb.KeySchemaElement, error) {
-	describeTableInput := &dynamodb.DescribeTableInput{
-		TableName: aws.String(tableName),
-	}
-
-	tableInfo, err := dynamoService.DescribeTable(describeTableInput)
+	tableInfo, err := describeTable(tableName)
 	if err != nil {
-		log.Println("Unable to describe the the table")
 		return nil, err
 	}
-
 	return tableInfo.Table.KeySchema, nil
 }
 
@@ -124,7 +118,15 @@ func convertItemToKey(item map[string]*dynamodb.AttributeValue) map[string]*dyna
 }
 
 func incrementallyBatchDelete(requestItems map[string][]*dynamodb.WriteRequest) error {
-	millisecondsToWait := 20
+	//used to induce jitter
+	randomGenerator := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	baseMillisecondsToWait := 20
+	maxMillisecondsToWait := 40
+	millisecondsToWait := randomGenerator.Intn(maxMillisecondsToWait)
+
+	//start of waiting so all the goroutines don't call batch delete at the same time
+	time.Sleep(time.Duration(millisecondsToWait) * time.Millisecond)
 
 	for {
 		batchWriteItemInput := &dynamodb.BatchWriteItemInput{
@@ -142,7 +144,7 @@ func incrementallyBatchDelete(requestItems map[string][]*dynamodb.WriteRequest) 
 
 		if len(batchWriteItemOutput.UnprocessedItems) > 0 {
 			//there are still items to write, reset requestItems for the next pass
-			log.Println("Unprocessed items remain, trying again with remaining items")
+			log.Println("Unprocessed items remain, trying again with remaining items in ")
 			requestItems = batchWriteItemOutput.UnprocessedItems
 		} else {
 			//no more items to write, break out
@@ -151,7 +153,8 @@ func incrementallyBatchDelete(requestItems map[string][]*dynamodb.WriteRequest) 
 
 		//do an exponential back-off
 		time.Sleep(time.Duration(millisecondsToWait) * time.Millisecond)
-		millisecondsToWait *= 2
+		maxMillisecondsToWait *= 2
+		millisecondsToWait = baseMillisecondsToWait + randomGenerator.Intn(maxMillisecondsToWait)
 	}
 
 	return nil

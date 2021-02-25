@@ -1,6 +1,7 @@
 package dynamo
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"log"
@@ -22,4 +23,18 @@ func DeleteAllItemsInTable(tableName string) error {
 
 	err = deleteItems(items, tableName)
 	return err
+}
+
+func describeTable(tableName string) (*dynamodb.DescribeTableOutput, error) {
+	describeTableInput := &dynamodb.DescribeTableInput{
+		TableName: aws.String(tableName),
+	}
+
+	tableInfo, err := dynamoService.DescribeTable(describeTableInput)
+	if err != nil {
+		log.Println("Unable to describe the the table")
+		return nil, err
+	}
+
+	return tableInfo, nil
 }
