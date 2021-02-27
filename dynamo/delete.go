@@ -163,7 +163,7 @@ func incrementallyBatchDelete(requestItems map[string][]*dynamodb.WriteRequest) 
 
 		if len(batchWriteItemOutput.UnprocessedItems) > 0 {
 			//there are still items to write, reset requestItems for the next pass
-			log.Println("Unprocessed items remain, trying again with remaining items in ")
+			log.Println("Unprocessed items remain, trying again with remaining items")
 			requestItems = batchWriteItemOutput.UnprocessedItems
 		} else {
 			//no more items to write, break out
