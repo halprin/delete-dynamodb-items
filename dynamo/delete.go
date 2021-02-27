@@ -3,7 +3,6 @@ package dynamo
 import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/halprin/delete-dynamodb-items/parallel"
-	"github.com/panjf2000/ants/v2"
 	"log"
 	"math/rand"
 	"time"
@@ -29,12 +28,7 @@ func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableName st
 		return err
 	}
 
-	//goroutinePool, err := ants.NewPool(concurrency)
-	goroutinePool, err := ants.NewPool(concurrency, ants.WithMaxBlockingTasks(300), ants.WithPreAlloc(true))
-	if err != nil {
-		log.Println("Unable spin-up goroutine pool")
-		return err
-	}
+	goroutinePool := parallel.NewPool(concurrency, len(dynamoItemsChunks))
 	defer goroutinePool.Release()
 
 	var errorChannels []chan error
@@ -44,17 +38,13 @@ func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableName st
 		errorChannel := make(chan error, 1)
 		errorChannels = append(errorChannels, errorChannel)
 
-		log.Println("submitting a deletion request to the pool")
-		err = goroutinePool.Submit(func() {
-			deleteChunkGoroutine(currentItemsChunk, tableName, errorChannel)
-		})
-		if err != nil {
-			log.Println("Failed to submit function to goroutine pool")
-			return err
-		}
-
-		//log.Println("Sleeping for 5 seconds")
-		//time.Sleep(time.Duration(3) * time.Second)
+		//wrapping in a function to make a copy of the currentItemsChunk and errorChannel arguments that are passed in,
+		//else all executions try to delete the same chunk of items
+		func(currentItemsChunk []map[string]*dynamodb.AttributeValue, errorChannel chan error) {
+			goroutinePool.Submit(func() {
+				deleteChunkGoroutine(currentItemsChunk, tableName, errorChannel)
+			})
+		}(currentItemsChunk, errorChannel)
 	}
 
 	log.Println("Waiting for all deletion goroutines to complete")
@@ -180,7 +170,7 @@ func incrementallyBatchDelete(requestItems map[string][]*dynamodb.WriteRequest) 
 			break
 		}
 
-		//do an exponential back-off
+		//do an exponential back-off with jitter
 		time.Sleep(time.Duration(millisecondsToWait) * time.Millisecond)
 		maxMillisecondsToWait *= 2
 		millisecondsToWait = baseMillisecondsToWait + randomGenerator.Intn(maxMillisecondsToWait)
