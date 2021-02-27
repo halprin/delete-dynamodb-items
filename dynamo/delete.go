@@ -1,10 +1,10 @@
 package dynamo
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/halprin/delete-dynamodb-items/parallel"
 	"log"
+	"math/rand"
 	"time"
 )
 
@@ -22,13 +22,32 @@ func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableName st
 
 	dynamoItemsChunks := chunkItems(dynamoItems)
 
+	concurrency, err := determineConcurrency(tableName)
+	if err != nil {
+		log.Println("Unable determine the concurrency")
+		return err
+	}
+
+	goroutinePool := parallel.NewPool(concurrency, len(dynamoItemsChunks))
+	defer goroutinePool.Release()
+
 	var errorChannels []chan error
 
 	for _, currentItemsChunk := range dynamoItemsChunks {
-		errorChannel := make(chan error)
+
+		errorChannel := make(chan error, 1)
 		errorChannels = append(errorChannels, errorChannel)
-		go deleteChunkGoroutine(currentItemsChunk, tableName, errorChannel)
+
+		//wrapping in a function to make a copy of the currentItemsChunk and errorChannel arguments that are passed in,
+		//else all executions try to delete the same chunk of items
+		func(currentItemsChunk []map[string]*dynamodb.AttributeValue, errorChannel chan error) {
+			goroutinePool.Submit(func() {
+				deleteChunkGoroutine(currentItemsChunk, tableName, errorChannel)
+			})
+		}(currentItemsChunk, errorChannel)
 	}
+
+	log.Println("Waiting for all deletion goroutines to complete")
 
 	for errorFromGoroutine := range parallel.MergeErrorChannels(errorChannels) {
 		if errorFromGoroutine != nil {
@@ -62,16 +81,10 @@ func deleteChunk(currentItemsChunk []map[string]*dynamodb.AttributeValue, tableN
 }
 
 func getTableKeys(tableName string) ([]*dynamodb.KeySchemaElement, error) {
-	describeTableInput := &dynamodb.DescribeTableInput{
-		TableName: aws.String(tableName),
-	}
-
-	tableInfo, err := dynamoService.DescribeTable(describeTableInput)
+	tableInfo, err := describeTable(tableName)
 	if err != nil {
-		log.Println("Unable to describe the the table")
 		return nil, err
 	}
-
 	return tableInfo.Table.KeySchema, nil
 }
 
@@ -124,7 +137,15 @@ func convertItemToKey(item map[string]*dynamodb.AttributeValue) map[string]*dyna
 }
 
 func incrementallyBatchDelete(requestItems map[string][]*dynamodb.WriteRequest) error {
-	millisecondsToWait := 20
+	//used to induce jitter
+	randomGenerator := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	baseMillisecondsToWait := 20
+	maxMillisecondsToWait := 40
+	millisecondsToWait := randomGenerator.Intn(maxMillisecondsToWait)
+
+	//start of waiting so all the goroutines don't call batch delete at the same time
+	time.Sleep(time.Duration(millisecondsToWait) * time.Millisecond)
 
 	for {
 		batchWriteItemInput := &dynamodb.BatchWriteItemInput{
@@ -149,9 +170,10 @@ func incrementallyBatchDelete(requestItems map[string][]*dynamodb.WriteRequest) 
 			break
 		}
 
-		//do an exponential back-off
+		//do an exponential back-off with jitter
 		time.Sleep(time.Duration(millisecondsToWait) * time.Millisecond)
-		millisecondsToWait *= 2
+		maxMillisecondsToWait *= 2
+		millisecondsToWait = baseMillisecondsToWait + randomGenerator.Intn(maxMillisecondsToWait)
 	}
 
 	return nil
