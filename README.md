@@ -12,11 +12,16 @@ _**Warning**: running this command will result in all the items in the specified
 is no "are you sure?" prompt._
 
 ```shell
-delete-dynamodb-items <table name>
+delete-dynamodb-items <table name> [--endpoint=URL]
 ```
 
 The program uses the default AWS credential algorithm to determine what IAM entity and region is used.  E.g. the
 `~/.aws/credentials` file, the `AWS_*` environment variables, etc.
+
+### Custom Endpoint
+
+You can customize the DynamoDB endpoint with the `--endpoint=` (or `-e`) option.  Set it to the URL of the endpoint.
+E.g. `--endpoint=http://localhost:8002`.  If unspecified, the default AWS endpoints are used.
 
 ## Build
 

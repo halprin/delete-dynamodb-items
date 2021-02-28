@@ -4,17 +4,26 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/halprin/delete-dynamodb-items/config"
 	"log"
 )
 
 var awsSession, sessionErr = session.NewSession()
 var dynamoService = dynamodb.New(awsSession)
 
-func DeleteAllItemsInTable(tableName string) error {
+func DeleteAllItemsInTable() error {
 	if sessionErr != nil {
 		log.Println("Initial AWS session failed")
 		return sessionErr
 	}
+
+	endpoint := config.GetDynamoDbEndpoint()
+	if endpoint != nil {
+		log.Printf("Using the custom endpoint %s", *endpoint)
+		dynamoService = dynamodb.New(awsSession, aws.NewConfig().WithEndpoint(*endpoint))
+	}
+
+	tableName := *config.GetTableName()
 
 	items, err := getItems(tableName)
 	if err != nil {
