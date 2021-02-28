@@ -3,12 +3,15 @@ package main
 import (
 	"errors"
 	"github.com/halprin/delete-dynamodb-items/dynamo"
+	"github.com/halprin/delete-dynamodb-items/external/cli"
 	"log"
 	"os"
 )
 
 func main() {
 	log.Println("Start")
+
+	cli.FillConfig()
 
 	tableName, err := getTableName()
 	if err != nil {
