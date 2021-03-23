@@ -11,7 +11,7 @@ import (
 var maxItemsPerBatchRequest = 25
 var tableKeys []*dynamodb.KeySchemaElement
 
-func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableName string) error {
+func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableName string, goroutinePool *parallel.Pool) error {
 
 	var err error
 	tableKeys, err = getTableKeys(tableName)
@@ -21,15 +21,6 @@ func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableName st
 	}
 
 	dynamoItemsChunks := chunkItems(dynamoItems)
-
-	concurrency, err := determineConcurrency(tableName)
-	if err != nil {
-		log.Println("Unable determine the concurrency")
-		return err
-	}
-
-	goroutinePool := parallel.NewPool(concurrency, len(dynamoItemsChunks))
-	defer goroutinePool.Release()
 
 	var errorChannels []chan error
 
