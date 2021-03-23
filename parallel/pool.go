@@ -10,7 +10,7 @@ type Pool struct {
 	waitGroup sync.WaitGroup
 }
 
-//poolSize needs to be bigger than taskQueueSize
+//taskQueueSize needs to be bigger than poolSize if you want to saturate the pool
 func NewPool(poolSize int, taskQueueSize int) *Pool {
 	newPool := &Pool{
 		ingestionPoolChannel: make(chan func(), taskQueueSize),

@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/halprin/delete-dynamodb-items/config"
+	"github.com/halprin/delete-dynamodb-items/parallel"
 	"log"
 )
 
@@ -25,13 +26,24 @@ func DeleteAllItemsInTable() error {
 
 	tableName := *config.GetTableName()
 
-	items, err := getItems(tableName)
+	concurrency, err := determineConcurrency(tableName)
 	if err != nil {
+		log.Println("Unable determine the concurrency")
 		return err
 	}
 
-	err = deleteItems(items, tableName)
-	return err
+	// 1024 * 1024 / 25 = 41,943.04 ~= 41,944
+	goroutinePool := parallel.NewPool(concurrency, 41944)
+	defer goroutinePool.Release()
+
+	for subItemList := range getItemsGoroutine(tableName) {
+		err = deleteItems(subItemList, tableName, goroutinePool)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func describeTable(tableName string) (*dynamodb.DescribeTableOutput, error) {
