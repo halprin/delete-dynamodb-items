@@ -11,7 +11,16 @@ func getItemsGoroutine(tableName string) chan []map[string]*dynamodb.AttributeVa
 
 	go func() {
 		scanInput := &dynamodb.ScanInput{
-			TableName: aws.String(tableName),
+			TableName:                aws.String(tableName),
+			FilterExpression:         aws.String("#k > :v"),
+			ExpressionAttributeNames: map[string]*string{
+				"#k": aws.String("number"),
+			},
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				":v": {
+					N: aws.String("50"),
+				},
+			},
 		}
 
 		for {
@@ -19,7 +28,7 @@ func getItemsGoroutine(tableName string) chan []map[string]*dynamodb.AttributeVa
 
 			scanOutput, err := dynamoService.Scan(scanInput)
 			if err != nil {
-				log.Println("Failed to scan the items")
+				log.Printf("Failed to scan the items, %+v", err)
 				break
 			}
 
