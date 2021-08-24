@@ -36,7 +36,11 @@ func DeleteAllItemsInTable() error {
 	goroutinePool := parallel.NewPool(concurrency, 41944)
 	defer goroutinePool.Release()
 
-	for subItemList := range getItemsGoroutine(tableName) {
+	expressionFilter := config.GetFilterExpression()
+	expressionAttributeNames := config.GetExpressionAttributeNames()
+	expressionAttributeValues := config.GetExpressionAttributeValues()
+
+	for subItemList := range getItemsGoroutine(tableName, expressionFilter, expressionAttributeNames, expressionAttributeValues) {
 		err = deleteItems(subItemList, tableName, goroutinePool)
 		if err != nil {
 			return err
