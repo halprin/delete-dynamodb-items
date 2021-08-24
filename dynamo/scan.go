@@ -51,7 +51,7 @@ func getItemsGoroutine(tableName string, filterExpression *string, expressionAtt
 			yield <- scanOutput.Items
 
 			if scanOutput.LastEvaluatedKey != nil && len(scanOutput.LastEvaluatedKey) > 0 {
-				//there are still items to scan, the the names to start scanning from again
+				//there are still items to scan, set the key to start scanning from again
 				scanInput.ExclusiveStartKey = scanOutput.LastEvaluatedKey
 			} else {
 				//no more items to scan, break out

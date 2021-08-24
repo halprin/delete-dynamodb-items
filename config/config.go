@@ -4,7 +4,7 @@ var tableName *string
 var dynamoDbEndpoint *string
 var filterExpression *string
 var expressionAttributeNames *string
-var expressionAttributeValues * string
+var expressionAttributeValues *string
 
 func SetTableName(name string) {
 	tableName = &name
