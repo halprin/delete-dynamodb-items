@@ -3,6 +3,7 @@ package cli
 import (
 	"github.com/halprin/delete-dynamodb-items/config"
 	"github.com/teris-io/cli"
+	"log"
 	"os"
 )
 
@@ -29,6 +30,7 @@ func FillConfig() {
 	help, helpExistsInOptions := options["help"]
 
 	if err != nil {
+		log.Printf("Error: %+v", err)
 		_ = parser.Usage(invocation, os.Stdout)
 		os.Exit(1)
 	} else if helpExistsInOptions && help == "true" {
@@ -56,6 +58,6 @@ func FillConfig() {
 
 	values, valuesExistsInOptions := options[expressionAttributeValuesKey]
 	if valuesExistsInOptions {
-		config.SetDynamoDbEndpoint(values)
+		config.SetExpressionAttributeValues(values)
 	}
 }
