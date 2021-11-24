@@ -5,6 +5,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"log"
+	"math/rand"
+	"time"
 )
 
 type DynamoDb struct {
@@ -90,7 +92,46 @@ func (d *DynamoDb) Scan(scanInput *dynamodb.ScanInput) chan []map[string]*dynamo
 	return yield
 }
 
-func (d *DynamoDb) BatchWrite(batchWriteItemInput *dynamodb.BatchWriteItemInput) *dynamodb.BatchWriteItemOutput {
-	panic("implement me")
+func (d *DynamoDb) BatchWrite(requestItems map[string][]*dynamodb.WriteRequest) error {
+	//used to induce jitter
+	randomGenerator := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	baseMillisecondsToWait := 20
+	maxMillisecondsToWait := 40
+	millisecondsToWait := randomGenerator.Intn(maxMillisecondsToWait)
+
+	//start of waiting so all the goroutines don't call batch delete at the same time
+	time.Sleep(time.Duration(millisecondsToWait) * time.Millisecond)
+
+	for {
+		batchWriteItemInput := &dynamodb.BatchWriteItemInput{
+			RequestItems: requestItems,
+		}
+
+		log.Println("Deleting some items")
+
+		batchWriteItemOutput, err := d.service.BatchWriteItem(batchWriteItemInput)
+		if err != nil {
+			//there was an error writing to DynamoDB
+			log.Println("Failed to put/delete items in DynamoDB")
+			return err
+		}
+
+		if len(batchWriteItemOutput.UnprocessedItems) > 0 {
+			//there are still items to write, reset requestItems for the next pass
+			log.Println("Unprocessed items remain, trying again with remaining items")
+			requestItems = batchWriteItemOutput.UnprocessedItems
+		} else {
+			//no more items to write, break out
+			break
+		}
+
+		//do an exponential back-off with jitter
+		time.Sleep(time.Duration(millisecondsToWait) * time.Millisecond)
+		maxMillisecondsToWait *= 2
+		millisecondsToWait = baseMillisecondsToWait + randomGenerator.Intn(maxMillisecondsToWait)
+	}
+
+	return nil
 }
 

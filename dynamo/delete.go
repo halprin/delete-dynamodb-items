@@ -2,23 +2,17 @@ package dynamo
 
 import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	myDynamo "github.com/halprin/delete-dynamodb-items/external/dynamodb"
 	"github.com/halprin/delete-dynamodb-items/parallel"
 	"log"
-	"math/rand"
-	"time"
 )
 
 var maxItemsPerBatchRequest = 25
 var tableKeys []*dynamodb.KeySchemaElement
 
-func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableName string, goroutinePool *parallel.Pool) error {
+func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableInfo *dynamodb.DescribeTableOutput, goroutinePool *parallel.Pool) error {
 
-	var err error
-	tableKeys, err = getTableKeys(tableName)
-	if err != nil {
-		log.Println("Unable to determine the keys of the table")
-		return err
-	}
+	tableKeys = getTableKeys(tableInfo)
 
 	dynamoItemsChunks := chunkItems(dynamoItems)
 
@@ -33,7 +27,7 @@ func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableName st
 		//else all executions try to delete the same chunk of items
 		func(currentItemsChunk []map[string]*dynamodb.AttributeValue, errorChannel chan error) {
 			goroutinePool.Submit(func() {
-				deleteChunkGoroutine(currentItemsChunk, tableName, errorChannel)
+				deleteChunkGoroutine(currentItemsChunk, *tableInfo.Table.TableName, errorChannel)
 			})
 		}(currentItemsChunk, errorChannel)
 	}
@@ -62,7 +56,7 @@ func deleteChunk(currentItemsChunk []map[string]*dynamodb.AttributeValue, tableN
 		tableName: writeRequests,
 	}
 
-	err := incrementallyBatchDelete(requestItems)
+	err := myDynamo.GetService().BatchWrite(requestItems)
 	if err != nil {
 		log.Println("Failed to batch delete items")
 		return err
@@ -71,12 +65,8 @@ func deleteChunk(currentItemsChunk []map[string]*dynamodb.AttributeValue, tableN
 	return nil
 }
 
-func getTableKeys(tableName string) ([]*dynamodb.KeySchemaElement, error) {
-	tableInfo, err := describeTable(tableName)
-	if err != nil {
-		return nil, err
-	}
-	return tableInfo.Table.KeySchema, nil
+func getTableKeys(tableInfo *dynamodb.DescribeTableOutput) []*dynamodb.KeySchemaElement {
+	return tableInfo.Table.KeySchema
 }
 
 func chunkItems(dynamoItems []map[string]*dynamodb.AttributeValue) [][]map[string]*dynamodb.AttributeValue {
@@ -125,47 +115,4 @@ func convertItemToKey(item map[string]*dynamodb.AttributeValue) map[string]*dyna
 	}
 
 	return key
-}
-
-func incrementallyBatchDelete(requestItems map[string][]*dynamodb.WriteRequest) error {
-	//used to induce jitter
-	randomGenerator := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	baseMillisecondsToWait := 20
-	maxMillisecondsToWait := 40
-	millisecondsToWait := randomGenerator.Intn(maxMillisecondsToWait)
-
-	//start of waiting so all the goroutines don't call batch delete at the same time
-	time.Sleep(time.Duration(millisecondsToWait) * time.Millisecond)
-
-	for {
-		batchWriteItemInput := &dynamodb.BatchWriteItemInput{
-			RequestItems: requestItems,
-		}
-
-		log.Println("Deleting some items")
-
-		batchWriteItemOutput, err := dynamoService.BatchWriteItem(batchWriteItemInput)
-		if err != nil {
-			//there was an error writing to DynamoDB
-			log.Println("Failed to put/delete items in DynamoDB")
-			return err
-		}
-
-		if len(batchWriteItemOutput.UnprocessedItems) > 0 {
-			//there are still items to write, reset requestItems for the next pass
-			log.Println("Unprocessed items remain, trying again with remaining items")
-			requestItems = batchWriteItemOutput.UnprocessedItems
-		} else {
-			//no more items to write, break out
-			break
-		}
-
-		//do an exponential back-off with jitter
-		time.Sleep(time.Duration(millisecondsToWait) * time.Millisecond)
-		maxMillisecondsToWait *= 2
-		millisecondsToWait = baseMillisecondsToWait + randomGenerator.Intn(maxMillisecondsToWait)
-	}
-
-	return nil
 }

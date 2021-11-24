@@ -46,7 +46,7 @@ func DeleteAllItemsInTable() error {
 	expressionAttributeValues := config.GetExpressionAttributeValues()
 
 	for subItemList := range getItemsGoroutine(tableName, expressionFilter, expressionAttributeNames, expressionAttributeValues) {
-		err = deleteItems(subItemList, tableName, goroutinePool)
+		err = deleteItems(subItemList, tableInfo, goroutinePool)
 		if err != nil {
 			return err
 		}
