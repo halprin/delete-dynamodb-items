@@ -13,40 +13,30 @@ type DynamoDb struct {
 	service *dynamodb.DynamoDB
 }
 
-var singleton *DynamoDb
-
-func InitializeDynamoDb() error {
+func NewDynamoDb() (*DynamoDb, error) {
 	awsSession, err := session.NewSession()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	dynamoService := dynamodb.New(awsSession)
 
-	singleton = &DynamoDb{
+	return &DynamoDb{
 		service: dynamoService,
-	}
-
-	return nil
+	}, nil
 }
 
-func InitializeDynamoDbWithEndpoint(endpoint string) error {
+func NewDynamoDbWithEndpoint(endpoint string) (*DynamoDb, error) {
 	awsSession, err := session.NewSession()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	dynamoService := dynamodb.New(awsSession, aws.NewConfig().WithEndpoint(endpoint))
 
-	singleton = &DynamoDb{
+	return &DynamoDb{
 		service: dynamoService,
-	}
-
-	return nil
-}
-
-func GetService() *DynamoDb {
-	return singleton
+	}, nil
 }
 
 func (d *DynamoDb) Describe(tableName string) (*dynamodb.DescribeTableOutput, error) {

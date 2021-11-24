@@ -3,7 +3,6 @@ package dynamo
 import (
 	"github.com/halprin/delete-dynamodb-items/config"
 	"github.com/halprin/delete-dynamodb-items/parallel"
-	myDynamo "github.com/halprin/delete-dynamodb-items/external/dynamodb"
 	"log"
 )
 
@@ -12,10 +11,10 @@ func DeleteAllItemsInTable() error {
 
 	endpoint := config.GetDynamoDbEndpoint()
 	if endpoint == nil {
-		err = myDynamo.InitializeDynamoDb()
+		err = InitializeDynamoDb()
 	} else {
 		log.Printf("Using the custom endpoint %s", *endpoint)
-		err = myDynamo.InitializeDynamoDbWithEndpoint(*endpoint)
+		err = InitializeDynamoDbWithEndpoint(*endpoint)
 	}
 
 	if err != nil {
@@ -25,7 +24,7 @@ func DeleteAllItemsInTable() error {
 
 	tableName := *config.GetTableName()
 
-	tableInfo, err := myDynamo.GetService().Describe(tableName)
+	tableInfo, err := GetService().Describe(tableName)
 	if err != nil {
 		log.Println("Unable to describe the the table")
 		return err

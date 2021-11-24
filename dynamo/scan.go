@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	myDynamo "github.com/halprin/delete-dynamodb-items/external/dynamodb"
 	"log"
 )
 
@@ -38,5 +37,5 @@ func getItemsGoroutine(tableName string, filterExpression *string, expressionAtt
 		ExpressionAttributeValues: values,
 	}
 
-	return myDynamo.GetService().Scan(scanInput)
+	return GetService().Scan(scanInput)
 }

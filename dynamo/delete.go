@@ -2,7 +2,6 @@ package dynamo
 
 import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	myDynamo "github.com/halprin/delete-dynamodb-items/external/dynamodb"
 	"github.com/halprin/delete-dynamodb-items/parallel"
 	"log"
 )
@@ -56,7 +55,7 @@ func deleteChunk(currentItemsChunk []map[string]*dynamodb.AttributeValue, tableN
 		tableName: writeRequests,
 	}
 
-	err := myDynamo.GetService().BatchWrite(requestItems)
+	err := GetService().BatchWrite(requestItems)
 	if err != nil {
 		log.Println("Failed to batch delete items")
 		return err
