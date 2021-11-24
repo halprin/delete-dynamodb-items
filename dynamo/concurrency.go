@@ -7,11 +7,7 @@ import (
 	"runtime"
 )
 
-func determineConcurrency(tableName string) (int, error) {
-	tableInfo, err := describeTable(tableName)
-	if err != nil {
-		return 0, err
-	}
+func determineConcurrency(tableInfo *dynamodb.DescribeTableOutput) (int, error) {
 
 	if isOnDemand(tableInfo) {
 		concurrency := getOnDemandConcurrency()

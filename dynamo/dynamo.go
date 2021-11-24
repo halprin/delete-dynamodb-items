@@ -1,32 +1,37 @@
 package dynamo
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/halprin/delete-dynamodb-items/config"
 	"github.com/halprin/delete-dynamodb-items/parallel"
+	myDynamo "github.com/halprin/delete-dynamodb-items/external/dynamodb"
 	"log"
 )
 
-var awsSession, sessionErr = session.NewSession()
-var dynamoService = dynamodb.New(awsSession)
-
 func DeleteAllItemsInTable() error {
-	if sessionErr != nil {
-		log.Println("Initial AWS session failed")
-		return sessionErr
-	}
+	var err error
 
 	endpoint := config.GetDynamoDbEndpoint()
-	if endpoint != nil {
+	if endpoint == nil {
+		err = myDynamo.InitializeDynamoDb()
+	} else {
 		log.Printf("Using the custom endpoint %s", *endpoint)
-		dynamoService = dynamodb.New(awsSession, aws.NewConfig().WithEndpoint(*endpoint))
+		err = myDynamo.InitializeDynamoDbWithEndpoint(*endpoint)
+	}
+
+	if err != nil {
+		log.Println("Initial AWS session failed")
+		return err
 	}
 
 	tableName := *config.GetTableName()
 
-	concurrency, err := determineConcurrency(tableName)
+	tableInfo, err := myDynamo.GetService().Describe(tableName)
+	if err != nil {
+		log.Println("Unable to describe the the table")
+		return err
+	}
+
+	concurrency, err := determineConcurrency(tableInfo)
 	if err != nil {
 		log.Println("Unable determine the concurrency")
 		return err
@@ -48,18 +53,4 @@ func DeleteAllItemsInTable() error {
 	}
 
 	return nil
-}
-
-func describeTable(tableName string) (*dynamodb.DescribeTableOutput, error) {
-	describeTableInput := &dynamodb.DescribeTableInput{
-		TableName: aws.String(tableName),
-	}
-
-	tableInfo, err := dynamoService.DescribeTable(describeTableInput)
-	if err != nil {
-		log.Println("Unable to describe the the table")
-		return nil, err
-	}
-
-	return tableInfo, nil
 }
