@@ -30,11 +30,7 @@ func DeleteAllItemsInTable() error {
 		return err
 	}
 
-	concurrency, err := determineConcurrency(tableInfo)
-	if err != nil {
-		log.Println("Unable determine the concurrency")
-		return err
-	}
+	concurrency := determineConcurrency(tableInfo)
 
 	// 1024 * 1024 / 25 = 41,943.04 ~= 41,944
 	goroutinePool := parallel.NewPool(concurrency, 41944)

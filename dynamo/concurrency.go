@@ -7,12 +7,12 @@ import (
 	"runtime"
 )
 
-func determineConcurrency(tableInfo *dynamodb.DescribeTableOutput) (int, error) {
+func determineConcurrency(tableInfo *dynamodb.DescribeTableOutput) int {
 
 	if isOnDemand(tableInfo) {
 		concurrency := getOnDemandConcurrency()
 		log.Printf("Given on demand concurrency, set concurrency to %d\n", concurrency)
-		return concurrency, nil
+		return concurrency
 	}
 
 	//the table has provisioned capacity
@@ -34,7 +34,7 @@ func determineConcurrency(tableInfo *dynamodb.DescribeTableOutput) (int, error) 
 
 	log.Printf("Given provisioned write capacity of %d, number of items %d, and table size %f KB, set concurrency to %d\n", writeCapacityUnits, numberOfItems, float64(tableSize) / float64(1024), concurrency)
 
-	return concurrency, nil
+	return concurrency
 }
 
 func isOnDemand(describeTable *dynamodb.DescribeTableOutput) bool {
