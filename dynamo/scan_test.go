@@ -19,6 +19,18 @@ func Test_getItemsGoroutine_filterExpressionIsNil(t *testing.T) {
 	assert.Nil(t, scanInputArgument.FilterExpression)
 }
 
+func Test_getItemsGoroutine_filterExpression(t *testing.T) {
+	mockDynamoDb := ResetDynamoDbMock()
+	mockDynamoDb.On("Scan", mock.Anything).Return(testChannelOfScanMethodReturnType())
+	filterExpression := "a filter expression"
+
+	_ = getItemsGoroutine("a table name", &filterExpression, nil, nil)
+
+	scanInputArgument := mockDynamoDb.Calls[0].Arguments.Get(0).(*dynamodb.ScanInput)
+
+	assert.Equal(t, filterExpression, *scanInputArgument.FilterExpression)
+}
+
 func testChannelOfScanMethodReturnType() chan []map[string]*dynamodb.AttributeValue {
 	channel := make(chan []map[string]*dynamodb.AttributeValue)
 
