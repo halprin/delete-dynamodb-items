@@ -1,7 +1,6 @@
 package dynamo
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -105,14 +104,7 @@ func testChannelOfScanMethodReturnType() chan []map[string]*dynamodb.AttributeVa
 	channel := make(chan []map[string]*dynamodb.AttributeValue)
 
 	go func() {
-		arrayOfDynamoDbStuff := []map[string]*dynamodb.AttributeValue{
-			{
-				"dogcow": {
-					S: aws.String("moof"),
-				},
-			},
-		}
-		channel <- arrayOfDynamoDbStuff
+		channel <- testDynamoDbItems()
 		close(channel)
 	}()
 
