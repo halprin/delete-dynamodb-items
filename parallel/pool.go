@@ -1,20 +1,17 @@
 package parallel
 
-import (
-	"sync"
-)
-
 type Pool struct {
-	ingestionPoolChannel chan func()
-	executionPoolChannel chan func()
-	waitGroup sync.WaitGroup
+	ingestionPoolChannel  chan func()
+	executionPoolChannel  chan func()
+	shutdownSignalChannel chan bool
 }
 
 //taskQueueSize needs to be bigger than poolSize if you want to saturate the pool
 func NewPool(poolSize int, taskQueueSize int) *Pool {
 	newPool := &Pool{
-		ingestionPoolChannel: make(chan func(), taskQueueSize),
-		executionPoolChannel: make(chan func(), poolSize),
+		ingestionPoolChannel:  make(chan func(), taskQueueSize),
+		executionPoolChannel:  make(chan func(), poolSize),
+		shutdownSignalChannel: make(chan bool, 1), //buffered so the Release method doesn't block when sending the shutdown signal
 	}
 
 	go newPool.submitIngestionGoroutine()
@@ -30,18 +27,39 @@ func (pool *Pool) Submit(task func()) {
 }
 
 func (pool *Pool) Release() {
+	pool.shutdownSignalChannel <- true
 	close(pool.ingestionPoolChannel)
-	close(pool.executionPoolChannel)
+	close(pool.shutdownSignalChannel)
 }
 
 func (pool *Pool) submitIngestionGoroutine() {
 	for submittedTask := range pool.ingestionPoolChannel {
 		pool.executionPoolChannel <- submittedTask
+
+		//check for the shutdown signal instead of waiting to drain the ingestionPoolChannel because there could be many long running tasks remaining
+		if pool.shutdownSignalRequested() {
+			break
+		}
 	}
+
+	close(pool.executionPoolChannel) //this goroutine sends on the executionPoolChannel, so it is in charge of it, and so it closes it
 }
 
 func (pool *Pool) submitExecutionGoroutine() {
 	for submittedTask := range pool.executionPoolChannel {
 		submittedTask()
 	}
+}
+
+func (pool *Pool) shutdownSignalRequested() bool {
+	shutdownRequested := false
+
+	select {
+	case <-pool.shutdownSignalChannel:
+		shutdownRequested = true
+	default:
+		shutdownRequested = false
+	}
+
+	return shutdownRequested
 }
