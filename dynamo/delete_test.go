@@ -24,7 +24,7 @@ func Test_deleteChunk_succeeds(t *testing.T) {
 
 	mockDynamoDb := ResetDynamoDbMock()
 	mockDynamoDb.On("BatchWrite", mock.Anything).Return(nil)
-	tableName := "DogCow"
+	tableName := "DogCow1"
 	columnName := "moofColumn"
 	dynamoDbItems := testDynamoDbItems(columnName)
 	tableKeys = []*dynamodb.KeySchemaElement{
@@ -51,7 +51,7 @@ func Test_deleteChunk_errorsFromCallToDynamoDb(t *testing.T) {
 	mockDynamoDb := ResetDynamoDbMock()
 	mockError := errors.New("this is an error")
 	mockDynamoDb.On("BatchWrite", mock.Anything).Return(mockError)
-	tableName := "DogCow"
+	tableName := "DogCow2"
 	columnName := "moofColumn"
 	dynamoDbItems := testDynamoDbItems(columnName)
 	tableKeys = []*dynamodb.KeySchemaElement{
@@ -70,7 +70,7 @@ func Test_deleteItems_succeeds(t *testing.T) {
 
 	mockDynamoDb := ResetDynamoDbMock()
 	mockDynamoDb.On("BatchWrite", mock.Anything).Return(nil)
-	tableName := "DogCow"
+	tableName := "DogCow3"
 	columnName := "moofColumn"
 	tableInfo := &dynamodb.DescribeTableOutput{
 		Table: &dynamodb.TableDescription{
@@ -111,7 +111,7 @@ func Test_deleteItems_failsWhenOneBatchWriteFails(t *testing.T) {
 	mockDynamoDb.On("BatchWrite", mock.Anything).Return(nil).Twice()
 	mockDynamoDb.On("BatchWrite", mock.Anything).Return(mockError).Once()
 	mockDynamoDb.On("BatchWrite", mock.Anything).Return(nil)
-	tableName := "DogCow"
+	tableName := "DogCow4"
 	columnName := "moofColumn"
 	tableInfo := &dynamodb.DescribeTableOutput{
 		Table: &dynamodb.TableDescription{

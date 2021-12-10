@@ -93,7 +93,7 @@ func marshalItemsIntoBatchWrites(dynamoItems []map[string]*dynamodb.AttributeVal
 		key := convertItemToKey(currentDynamoItem)
 
 		deleteRequest := &dynamodb.DeleteRequest{
-			Key:  key,
+			Key: key,
 		}
 
 		writeRequest = &dynamodb.WriteRequest{

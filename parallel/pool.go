@@ -1,9 +1,12 @@
 package parallel
 
+import "sync"
+
 type Pool struct {
 	ingestionPoolChannel  chan func()
 	executionPoolChannel  chan func()
 	shutdownSignalChannel chan bool
+	executorsAreStopped   sync.WaitGroup
 }
 
 //taskQueueSize needs to be bigger than poolSize if you want to saturate the pool
@@ -12,8 +15,10 @@ func NewPool(poolSize int, taskQueueSize int) *Pool {
 		ingestionPoolChannel:  make(chan func(), taskQueueSize),
 		executionPoolChannel:  make(chan func(), poolSize),
 		shutdownSignalChannel: make(chan bool, 1), //buffered so the Release method doesn't block when sending the shutdown signal
+		executorsAreStopped:   sync.WaitGroup{},
 	}
 
+	newPool.executorsAreStopped.Add(poolSize)
 	go newPool.submitIngestionGoroutine()
 	for workerIndex := 0; workerIndex < poolSize; workerIndex++ {
 		go newPool.submitExecutionGoroutine()
@@ -30,6 +35,7 @@ func (pool *Pool) Release() {
 	pool.shutdownSignalChannel <- true
 	close(pool.ingestionPoolChannel)
 	close(pool.shutdownSignalChannel)
+	pool.executorsAreStopped.Wait() //wait for all the executors to finish their execution of their current task
 }
 
 func (pool *Pool) submitIngestionGoroutine() {
@@ -49,6 +55,7 @@ func (pool *Pool) submitExecutionGoroutine() {
 	for submittedTask := range pool.executionPoolChannel {
 		submittedTask()
 	}
+	pool.executorsAreStopped.Done()
 }
 
 func (pool *Pool) shutdownSignalRequested() bool {
