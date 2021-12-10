@@ -103,6 +103,38 @@ func Test_deleteItems_succeeds(t *testing.T) {
 	assert.Empty(dynamoDbItems) //dynamoDbItems being empty means we deleted every item passed into deleteItems
 }
 
+func Test_deleteItems_failsWhenOneBatchWriteFails(t *testing.T) {
+	assert := assert.New(t)
+
+	mockDynamoDb := ResetDynamoDbMock()
+	mockError := errors.New("it does an error")
+	mockDynamoDb.On("BatchWrite", mock.Anything).Return(nil).Twice()
+	mockDynamoDb.On("BatchWrite", mock.Anything).Return(mockError).Once()
+	mockDynamoDb.On("BatchWrite", mock.Anything).Return(nil)
+	tableName := "DogCow"
+	columnName := "moofColumn"
+	tableInfo := &dynamodb.DescribeTableOutput{
+		Table: &dynamodb.TableDescription{
+			TableName: &tableName,
+			KeySchema: []*dynamodb.KeySchemaElement{
+				{
+					AttributeName: &columnName,
+				},
+			},
+		},
+	}
+	dynamoDbItems := testDynamoDbItems(columnName)
+
+	//create a simple goroutine pool
+	goroutinePool := parallel.NewPool(2, 50)
+	defer goroutinePool.Release()
+
+	err := deleteItems(dynamoDbItems, tableInfo, goroutinePool)
+
+	assert.Equal(mockError, err)
+	assert.GreaterOrEqual(len(mockDynamoDb.Calls), 3) //3 for the two mocked calls that don't return an error and the remaining mocked call that does return an error
+}
+
 func indexOf(slice []map[string]*dynamodb.AttributeValue, valueToSearchFor map[string]*dynamodb.AttributeValue) int {
 	for index, valueInSlice := range slice {
 		if mapsEqual(valueInSlice, valueToSearchFor) {
