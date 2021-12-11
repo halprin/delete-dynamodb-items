@@ -27,5 +27,8 @@ jobs:
     - name: Build
       run: make compile
 
+    - name: Test Dependency
+      run: apt-get install uuid-runtime
+
     - name: Test
       run: make test
