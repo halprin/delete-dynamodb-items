@@ -17,12 +17,12 @@ for ((index = 1 ; index <= num_items ; index++)); do
     items_middle="${items_middle}${current_request},"
     if [[ $((index % 25)) == 0 ]]; then
         items_middle=${items_middle::${#items_middle}-1}
-        aws dynamodb batch-write-item --request-items "${items_preamble}${items_middle}${items_ending}" --endpoint-url http://127.0.0.1:8002
+        aws dynamodb batch-write-item --request-items "${items_preamble}${items_middle}${items_ending}" --endpoint-url http://127.0.0.1:8002 --no-cli-pager
         items_middle=""
     fi
 done
 
 if [[ -n "${items_middle}" ]]; then
     items_middle=${items_middle::${#items_middle}-1}
-    aws dynamodb batch-write-item --request-items "${items_preamble}${items_middle}${items_ending}" --endpoint-url http://127.0.0.1:8002
+    aws dynamodb batch-write-item --request-items "${items_preamble}${items_middle}${items_ending}" --endpoint-url http://127.0.0.1:8002 --no-cli-pager
 fi
