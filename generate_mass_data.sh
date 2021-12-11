@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 num_items="${1}"
 
