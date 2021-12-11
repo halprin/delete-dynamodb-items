@@ -35,7 +35,7 @@ func (pool *Pool) Release() {
 	pool.shutdownSignalChannel <- true
 	close(pool.ingestionPoolChannel)
 	close(pool.shutdownSignalChannel)
-	pool.executorsAreStopped.Wait() //wait for all the executors to finish their execution of their current task
+	pool.executorsAreStopped.Wait() //wait for all the executors to finish their current task
 }
 
 func (pool *Pool) submitIngestionGoroutine() {
