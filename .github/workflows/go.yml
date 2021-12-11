@@ -31,4 +31,8 @@ jobs:
       run: sudo apt-get update && sudo apt-get -y install uuid-runtime
 
     - name: Test
+      env:
+        AWS_REGION: us-east-1
+        AWS_ACCESS_KEY_ID: DogCow
+        AWS_SECRET_ACCESS_KEY: Moof
       run: make test
