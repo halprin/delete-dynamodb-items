@@ -27,9 +27,6 @@ jobs:
     - name: Build
       run: make compile
 
-    - name: Test Dependency
-      run: sudo apt-get update && sudo apt-get -y install uuid-runtime
-
     - name: Test
       env:
         AWS_REGION: us-east-1
