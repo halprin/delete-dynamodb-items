@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -x
+set -euo pipefail
 
 num_items="${1}"
 
