@@ -7,3 +7,6 @@ runTestDynamoDB:
 
 loadTestData:
 	./generate_mass_data.sh 500
+
+test:
+	go test ./...
