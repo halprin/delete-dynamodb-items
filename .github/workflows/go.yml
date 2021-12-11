@@ -28,7 +28,7 @@ jobs:
       run: make compile
 
     - name: Test Dependency
-      run: apt-get install uuid-runtime
+      run: sudo apt-get -y install uuid-runtime
 
     - name: Test
       run: make test
