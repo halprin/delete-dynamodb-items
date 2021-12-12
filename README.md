@@ -43,8 +43,4 @@ Thank you for thinking of contributing!  Please see the [contributing guide](./C
 
 ## Development
 
-Run the following to compile your own copy from source.
-
-```shell
-make compile
-```
+See the [contributing guide](./CONTRIBUTING.md#you-want-to-fix-a-bug-or-create-a-new-feature).
