@@ -41,5 +41,5 @@ E.g. `--endpoint=http://localhost:8002`.  If unspecified, the default AWS endpoi
 Run the following to compile your own copy from source.
 
 ```shell
-go build -o delete-dynamodb-items -v ./cmd/
+make compile
 ```
