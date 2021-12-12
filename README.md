@@ -1,4 +1,5 @@
 # delete-dynamodb-items
+
 Bulk delete items from a DynamoDB table.
 
 ## Download
@@ -18,7 +19,7 @@ delete-dynamodb-items <table name> [--endpoint=URL] [--filter-expression=string]
 The program uses the default AWS credential algorithm to determine what IAM entity and region is used.  E.g. the
 `~/.aws/credentials` file, the `AWS_*` environment variables, etc.
 
-## Filter Expressions
+### Filter Expressions
 
 You can specify a special expression to filter out items you don't want deleted.  AKA, the item will be deleted if the
 filter matches.  You can learn more about filter expressions in
