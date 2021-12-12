@@ -37,7 +37,11 @@ E.g. `--filter-expression='#k > :v' --expression-attribute-names='{"#k": "number
 You can customize the DynamoDB endpoint with the `--endpoint=` (or `-e`) option.  Set it to the URL of the endpoint.
 E.g. `--endpoint=http://localhost:8002`.  If unspecified, the default AWS endpoints are used.
 
-## Build
+## Contributing
+
+Thank you for thinking of contributing!  Please see the [contributing guide](./CONTRIBUTING.md).
+
+## Development
 
 Run the following to compile your own copy from source.
 
