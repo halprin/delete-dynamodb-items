@@ -3,7 +3,7 @@ module github.com/halprin/delete-dynamodb-items
 go 1.21
 
 require (
-	github.com/aws/aws-sdk-go v1.50.14
+	github.com/aws/aws-sdk-go v1.50.15
 	github.com/stretchr/testify v1.8.4
 	github.com/teris-io/cli v1.0.1
 )
