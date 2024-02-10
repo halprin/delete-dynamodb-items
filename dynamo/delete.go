@@ -1,15 +1,16 @@
 package dynamo
 
 import (
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/halprin/delete-dynamodb-items/parallel"
 	"log"
 )
 
 var maxItemsPerBatchRequest = 25
-var tableKeys []*dynamodb.KeySchemaElement
+var tableKeys []types.KeySchemaElement
 
-func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableInfo *dynamodb.DescribeTableOutput, goroutinePool *parallel.Pool) error {
+func deleteItems(dynamoItems []map[string]types.AttributeValue, tableInfo *dynamodb.DescribeTableOutput, goroutinePool *parallel.Pool) error {
 
 	tableKeys = getTableKeys(tableInfo)
 
@@ -24,7 +25,7 @@ func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableInfo *d
 
 		//wrapping in a function to make a copy of the currentItemsChunk and errorChannel arguments that are passed in,
 		//else all executions try to delete the same chunk of items
-		func(currentItemsChunk []map[string]*dynamodb.AttributeValue, errorChannel chan error) {
+		func(currentItemsChunk []map[string]types.AttributeValue, errorChannel chan error) {
 			goroutinePool.Submit(func() {
 				deleteChunkGoroutine(currentItemsChunk, *tableInfo.Table.TableName, errorChannel)
 			})
@@ -43,15 +44,15 @@ func deleteItems(dynamoItems []map[string]*dynamodb.AttributeValue, tableInfo *d
 	return nil
 }
 
-func deleteChunkGoroutine(currentItemsChunk []map[string]*dynamodb.AttributeValue, tableName string, errorChannel chan error) {
+func deleteChunkGoroutine(currentItemsChunk []map[string]types.AttributeValue, tableName string, errorChannel chan error) {
 	errorChannel <- deleteChunk(currentItemsChunk, tableName)
 	close(errorChannel)
 }
 
-func deleteChunk(currentItemsChunk []map[string]*dynamodb.AttributeValue, tableName string) error {
+func deleteChunk(currentItemsChunk []map[string]types.AttributeValue, tableName string) error {
 	writeRequests := marshalItemsIntoBatchWrites(currentItemsChunk)
 
-	requestItems := map[string][]*dynamodb.WriteRequest{
+	requestItems := map[string][]types.WriteRequest{
 		tableName: writeRequests,
 	}
 
@@ -64,12 +65,12 @@ func deleteChunk(currentItemsChunk []map[string]*dynamodb.AttributeValue, tableN
 	return nil
 }
 
-func getTableKeys(tableInfo *dynamodb.DescribeTableOutput) []*dynamodb.KeySchemaElement {
+func getTableKeys(tableInfo *dynamodb.DescribeTableOutput) []types.KeySchemaElement {
 	return tableInfo.Table.KeySchema
 }
 
-func chunkItems(dynamoItems []map[string]*dynamodb.AttributeValue) [][]map[string]*dynamodb.AttributeValue {
-	var itemChunks [][]map[string]*dynamodb.AttributeValue
+func chunkItems(dynamoItems []map[string]types.AttributeValue) [][]map[string]types.AttributeValue {
+	var itemChunks [][]map[string]types.AttributeValue
 	numberOfItems := len(dynamoItems)
 
 	for itemIndex := 0; itemIndex < numberOfItems; itemIndex += maxItemsPerBatchRequest {
@@ -85,18 +86,18 @@ func chunkItems(dynamoItems []map[string]*dynamodb.AttributeValue) [][]map[strin
 	return itemChunks
 }
 
-func marshalItemsIntoBatchWrites(dynamoItems []map[string]*dynamodb.AttributeValue) []*dynamodb.WriteRequest {
-	var writeRequests []*dynamodb.WriteRequest
-	var writeRequest *dynamodb.WriteRequest
+func marshalItemsIntoBatchWrites(dynamoItems []map[string]types.AttributeValue) []types.WriteRequest {
+	var writeRequests []types.WriteRequest
+	var writeRequest types.WriteRequest
 
 	for _, currentDynamoItem := range dynamoItems {
 		key := convertItemToKey(currentDynamoItem)
 
-		deleteRequest := &dynamodb.DeleteRequest{
+		deleteRequest := &types.DeleteRequest{
 			Key: key,
 		}
 
-		writeRequest = &dynamodb.WriteRequest{
+		writeRequest = types.WriteRequest{
 			DeleteRequest: deleteRequest,
 		}
 
@@ -106,8 +107,8 @@ func marshalItemsIntoBatchWrites(dynamoItems []map[string]*dynamodb.AttributeVal
 	return writeRequests
 }
 
-func convertItemToKey(item map[string]*dynamodb.AttributeValue) map[string]*dynamodb.AttributeValue {
-	key := make(map[string]*dynamodb.AttributeValue)
+func convertItemToKey(item map[string]types.AttributeValue) map[string]types.AttributeValue {
+	key := make(map[string]types.AttributeValue)
 	for _, currentTableKey := range tableKeys {
 		currentTableKeyName := *currentTableKey.AttributeName
 		key[currentTableKeyName] = item[currentTableKeyName]

@@ -1,41 +1,45 @@
 package dynamodb
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"context"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"log"
 	"math/rand"
 	"time"
 )
 
 type DynamoDb struct {
-	service *dynamodb.DynamoDB
+	client *dynamodb.Client
 }
 
 func NewDynamoDb() (*DynamoDb, error) {
-	awsSession, err := session.NewSession()
+	awsConfig, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	dynamoService := dynamodb.New(awsSession)
+	dynamoClient := dynamodb.NewFromConfig(awsConfig)
 
 	return &DynamoDb{
-		service: dynamoService,
+		client: dynamoClient,
 	}, nil
 }
 
 func NewDynamoDbWithEndpoint(endpoint string) (*DynamoDb, error) {
-	awsSession, err := session.NewSession()
+	awsConfig, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	dynamoService := dynamodb.New(awsSession, aws.NewConfig().WithEndpoint(endpoint))
+	dynamoClient := dynamodb.NewFromConfig(awsConfig, func(options *dynamodb.Options) {
+		options.BaseEndpoint = &endpoint
+	})
 
 	return &DynamoDb{
-		service: dynamoService,
+		client: dynamoClient,
 	}, nil
 }
 
@@ -44,7 +48,7 @@ func (d *DynamoDb) Describe(tableName string) (*dynamodb.DescribeTableOutput, er
 		TableName: aws.String(tableName),
 	}
 
-	tableInfo, err := d.service.DescribeTable(describeTableInput)
+	tableInfo, err := d.client.DescribeTable(context.Background(), describeTableInput)
 	if err != nil {
 		return nil, err
 	}
@@ -52,15 +56,15 @@ func (d *DynamoDb) Describe(tableName string) (*dynamodb.DescribeTableOutput, er
 	return tableInfo, nil
 }
 
-func (d *DynamoDb) Scan(scanInput *dynamodb.ScanInput) chan []map[string]*dynamodb.AttributeValue {
-	yield := make(chan []map[string]*dynamodb.AttributeValue)
+func (d *DynamoDb) Scan(scanInput *dynamodb.ScanInput) chan []map[string]types.AttributeValue {
+	yield := make(chan []map[string]types.AttributeValue)
 
 	go func() {
 
 		for {
 			log.Println("Scanning items")
 
-			scanOutput, err := d.service.Scan(scanInput)
+			scanOutput, err := d.client.Scan(context.Background(), scanInput)
 			if err != nil {
 				log.Printf("Failed to scan the items, %+v", err)
 				break
@@ -82,7 +86,7 @@ func (d *DynamoDb) Scan(scanInput *dynamodb.ScanInput) chan []map[string]*dynamo
 	return yield
 }
 
-func (d *DynamoDb) BatchWrite(requestItems map[string][]*dynamodb.WriteRequest) error {
+func (d *DynamoDb) BatchWrite(requestItems map[string][]types.WriteRequest) error {
 	//used to induce jitter
 	randomGenerator := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -100,7 +104,7 @@ func (d *DynamoDb) BatchWrite(requestItems map[string][]*dynamodb.WriteRequest) 
 
 		log.Println("Deleting some items")
 
-		batchWriteItemOutput, err := d.service.BatchWriteItem(batchWriteItemInput)
+		batchWriteItemOutput, err := d.client.BatchWriteItem(context.Background(), batchWriteItemInput)
 		if err != nil {
 			//there was an error writing to DynamoDB
 			log.Println("Failed to put/delete items in DynamoDB")
@@ -124,4 +128,3 @@ func (d *DynamoDb) BatchWrite(requestItems map[string][]*dynamodb.WriteRequest) 
 
 	return nil
 }
-

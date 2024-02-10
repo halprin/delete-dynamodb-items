@@ -1,7 +1,8 @@
 package dynamo
 
 import (
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"log"
 	"math"
 	"runtime"
@@ -32,7 +33,7 @@ func determineConcurrency(tableInfo *dynamodb.DescribeTableOutput) int {
 		concurrency = int(rawConcurrency)
 	}
 
-	log.Printf("Given provisioned write capacity of %d, number of items %d, and table size %f KB, set concurrency to %d\n", writeCapacityUnits, numberOfItems, float64(tableSize) / float64(1024), concurrency)
+	log.Printf("Given provisioned write capacity of %d, number of items %d, and table size %f KB, set concurrency to %d\n", writeCapacityUnits, numberOfItems, float64(tableSize)/float64(1024), concurrency)
 
 	return concurrency
 }
@@ -40,7 +41,7 @@ func determineConcurrency(tableInfo *dynamodb.DescribeTableOutput) int {
 func isOnDemand(describeTable *dynamodb.DescribeTableOutput) bool {
 	billingModeSummary := describeTable.Table.BillingModeSummary
 	if billingModeSummary != nil {
-		return *describeTable.Table.BillingModeSummary.BillingMode == dynamodb.BillingModePayPerRequest
+		return describeTable.Table.BillingModeSummary.BillingMode == types.BillingModePayPerRequest
 	}
 
 	return getWriteCapacityUnits(describeTable) == 0

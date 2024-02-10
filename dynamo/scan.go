@@ -2,15 +2,15 @@ package dynamo
 
 import (
 	"encoding/json"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"log"
 )
 
-type expressionAttributeNamesType map[string]*string
-type expressionAttributeValuesType map[string]*dynamodb.AttributeValue
+type expressionAttributeNamesType map[string]string
+type expressionAttributeValuesType map[string]types.AttributeValue
 
-func getItemsGoroutine(tableName string, filterExpression *string, expressionAttributeNames *string, expressionAttributeValues *string) chan []map[string]*dynamodb.AttributeValue {
+func getItemsGoroutine(tableName string, filterExpression *string, expressionAttributeNames *string, expressionAttributeValues *string) chan []map[string]types.AttributeValue {
 
 	var names expressionAttributeNamesType
 	if expressionAttributeNames != nil {
@@ -31,8 +31,8 @@ func getItemsGoroutine(tableName string, filterExpression *string, expressionAtt
 	}
 
 	scanInput := &dynamodb.ScanInput{
-		TableName:                aws.String(tableName),
-		FilterExpression:         filterExpression,
+		TableName:                 &tableName,
+		FilterExpression:          filterExpression,
 		ExpressionAttributeNames:  names,
 		ExpressionAttributeValues: values,
 	}
