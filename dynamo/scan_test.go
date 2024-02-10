@@ -1,7 +1,8 @@
 package dynamo
 
 import (
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -100,8 +101,8 @@ func Test_getItemsGoroutine_expressionAttributeValues(t *testing.T) {
 	assert.NotNil(t, scanInputArgument.ExpressionAttributeValues)
 }
 
-func testChannelOfScanMethodReturnType() chan []map[string]*dynamodb.AttributeValue {
-	channel := make(chan []map[string]*dynamodb.AttributeValue)
+func testChannelOfScanMethodReturnType() chan []map[string]types.AttributeValue {
+	channel := make(chan []map[string]types.AttributeValue)
 
 	go func() {
 		channel <- testDynamoDbItems()

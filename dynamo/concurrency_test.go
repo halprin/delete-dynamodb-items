@@ -1,8 +1,9 @@
 package dynamo
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/stretchr/testify/assert"
 	"runtime"
 	"testing"
@@ -12,9 +13,9 @@ func Test_determineConcurrency_CalculatesOnDemandWithBillingMode(t *testing.T) {
 	assert := assert.New(t)
 
 	tableInfo := &dynamodb.DescribeTableOutput{
-		Table: &dynamodb.TableDescription{
-			BillingModeSummary: &dynamodb.BillingModeSummary{
-				BillingMode: aws.String(dynamodb.BillingModePayPerRequest),
+		Table: &types.TableDescription{
+			BillingModeSummary: &types.BillingModeSummary{
+				BillingMode: types.BillingModePayPerRequest,
 			},
 		},
 	}
@@ -28,9 +29,9 @@ func Test_determineConcurrency_CalculatesOnDemandWithProvisionBeingZero(t *testi
 	assert := assert.New(t)
 
 	tableInfo := &dynamodb.DescribeTableOutput{
-		Table: &dynamodb.TableDescription{
+		Table: &types.TableDescription{
 			BillingModeSummary: nil,
-			ProvisionedThroughput: &dynamodb.ProvisionedThroughputDescription{
+			ProvisionedThroughput: &types.ProvisionedThroughputDescription{
 				WriteCapacityUnits: aws.Int64(0),
 			},
 		},
@@ -45,11 +46,11 @@ func Test_determineConcurrency_CalculatesProvision(t *testing.T) {
 	assert := assert.New(t)
 
 	tableInfo := &dynamodb.DescribeTableOutput{
-		Table: &dynamodb.TableDescription{
-			ProvisionedThroughput: &dynamodb.ProvisionedThroughputDescription{
+		Table: &types.TableDescription{
+			ProvisionedThroughput: &types.ProvisionedThroughputDescription{
 				WriteCapacityUnits: aws.Int64(2631),
 			},
-			ItemCount: aws.Int64(36001),
+			ItemCount:      aws.Int64(36001),
 			TableSizeBytes: aws.Int64(506060108),
 		},
 	}
@@ -71,11 +72,11 @@ func Test_determineConcurrency_CalculatesProvisionWithTableSizeZero(t *testing.T
 	assert := assert.New(t)
 
 	tableInfo := &dynamodb.DescribeTableOutput{
-		Table: &dynamodb.TableDescription{
-			ProvisionedThroughput: &dynamodb.ProvisionedThroughputDescription{
+		Table: &types.TableDescription{
+			ProvisionedThroughput: &types.ProvisionedThroughputDescription{
 				WriteCapacityUnits: aws.Int64(2631),
 			},
-			ItemCount: aws.Int64(36001),
+			ItemCount:      aws.Int64(36001),
 			TableSizeBytes: aws.Int64(0),
 		},
 	}
@@ -93,11 +94,11 @@ func Test_determineConcurrency_CalculatesProvisionWithItemCountZero(t *testing.T
 	assert := assert.New(t)
 
 	tableInfo := &dynamodb.DescribeTableOutput{
-		Table: &dynamodb.TableDescription{
-			ProvisionedThroughput: &dynamodb.ProvisionedThroughputDescription{
+		Table: &types.TableDescription{
+			ProvisionedThroughput: &types.ProvisionedThroughputDescription{
 				WriteCapacityUnits: aws.Int64(2631),
 			},
-			ItemCount: aws.Int64(0),
+			ItemCount:      aws.Int64(0),
 			TableSizeBytes: aws.Int64(506060108),
 		},
 	}
@@ -119,11 +120,11 @@ func Test_determineConcurrency_CalculatesProvisionWithConcurencyLessThanOne(t *t
 	assert := assert.New(t)
 
 	tableInfo := &dynamodb.DescribeTableOutput{
-		Table: &dynamodb.TableDescription{
-			ProvisionedThroughput: &dynamodb.ProvisionedThroughputDescription{
+		Table: &types.TableDescription{
+			ProvisionedThroughput: &types.ProvisionedThroughputDescription{
 				WriteCapacityUnits: aws.Int64(34),
 			},
-			ItemCount: aws.Int64(36001),
+			ItemCount:      aws.Int64(36001),
 			TableSizeBytes: aws.Int64(506060108),
 		},
 	}

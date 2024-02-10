@@ -1,7 +1,8 @@
 package dynamo
 
 import (
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -20,12 +21,12 @@ func (d *DynamoDbMock) Describe(tableName string) (*dynamodb.DescribeTableOutput
 	return args.Get(0).(*dynamodb.DescribeTableOutput), args.Error(1)
 }
 
-func (d *DynamoDbMock) Scan(input *dynamodb.ScanInput) chan []map[string]*dynamodb.AttributeValue {
+func (d *DynamoDbMock) Scan(input *dynamodb.ScanInput) chan []map[string]types.AttributeValue {
 	args := d.Called(input)
-	return args.Get(0).(chan []map[string]*dynamodb.AttributeValue)
+	return args.Get(0).(chan []map[string]types.AttributeValue)
 }
 
-func (d *DynamoDbMock) BatchWrite(requestItems map[string][]*dynamodb.WriteRequest) error {
+func (d *DynamoDbMock) BatchWrite(requestItems map[string][]types.WriteRequest) error {
 	args := d.Called(requestItems)
 	return args.Error(0)
 }
