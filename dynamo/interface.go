@@ -1,14 +1,15 @@
 package dynamo
 
 import (
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	myDynamoImplementation "github.com/halprin/delete-dynamodb-items/external/dynamodb"
 )
 
 type DynamoDber interface {
 	Describe(tableName string) (*dynamodb.DescribeTableOutput, error)
-	Scan(*dynamodb.ScanInput) chan []map[string]*dynamodb.AttributeValue
-	BatchWrite(requestItems map[string][]*dynamodb.WriteRequest) error
+	Scan(*dynamodb.ScanInput) chan []map[string]types.AttributeValue
+	BatchWrite(requestItems map[string][]types.WriteRequest) error
 }
 
 var singleton DynamoDber

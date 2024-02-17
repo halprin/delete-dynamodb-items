@@ -3,8 +3,8 @@ package dynamo
 import (
 	"errors"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/halprin/delete-dynamodb-items/parallel"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -27,7 +27,7 @@ func Test_deleteChunk_succeeds(t *testing.T) {
 	tableName := "DogCow1"
 	columnName := "moofColumn"
 	dynamoDbItems := testDynamoDbItems(columnName)
-	tableKeys = []*dynamodb.KeySchemaElement{
+	tableKeys = []types.KeySchemaElement{
 		{
 			AttributeName: &columnName,
 		},
@@ -35,7 +35,7 @@ func Test_deleteChunk_succeeds(t *testing.T) {
 
 	err := deleteChunk(dynamoDbItems, tableName)
 
-	writeRequestArgument := mockDynamoDb.Calls[0].Arguments.Get(0).(map[string][]*dynamodb.WriteRequest)
+	writeRequestArgument := mockDynamoDb.Calls[0].Arguments.Get(0).(map[string][]types.WriteRequest)
 
 	assert.Nil(err)
 	assert.Len(writeRequestArgument[tableName], len(dynamoDbItems))
@@ -54,7 +54,7 @@ func Test_deleteChunk_errorsFromCallToDynamoDb(t *testing.T) {
 	tableName := "DogCow2"
 	columnName := "moofColumn"
 	dynamoDbItems := testDynamoDbItems(columnName)
-	tableKeys = []*dynamodb.KeySchemaElement{
+	tableKeys = []types.KeySchemaElement{
 		{
 			AttributeName: &columnName,
 		},
@@ -73,9 +73,9 @@ func Test_deleteItems_succeeds(t *testing.T) {
 	tableName := "DogCow3"
 	columnName := "moofColumn"
 	tableInfo := &dynamodb.DescribeTableOutput{
-		Table: &dynamodb.TableDescription{
+		Table: &types.TableDescription{
 			TableName: &tableName,
-			KeySchema: []*dynamodb.KeySchemaElement{
+			KeySchema: []types.KeySchemaElement{
 				{
 					AttributeName: &columnName,
 				},
@@ -92,7 +92,7 @@ func Test_deleteItems_succeeds(t *testing.T) {
 
 	assert.Nil(err)
 	for _, mockCall := range mockDynamoDb.Calls {
-		writeRequestArgument := mockCall.Arguments.Get(0).(map[string][]*dynamodb.WriteRequest)
+		writeRequestArgument := mockCall.Arguments.Get(0).(map[string][]types.WriteRequest)
 		for _, request := range writeRequestArgument[tableName] {
 			keyToBeDeleted := request.DeleteRequest.Key
 			//remove item from the dynamoDB items.
@@ -114,9 +114,9 @@ func Test_deleteItems_failsWhenOneBatchWriteFails(t *testing.T) {
 	tableName := "DogCow4"
 	columnName := "moofColumn"
 	tableInfo := &dynamodb.DescribeTableOutput{
-		Table: &dynamodb.TableDescription{
+		Table: &types.TableDescription{
 			TableName: &tableName,
-			KeySchema: []*dynamodb.KeySchemaElement{
+			KeySchema: []types.KeySchemaElement{
 				{
 					AttributeName: &columnName,
 				},
@@ -135,7 +135,7 @@ func Test_deleteItems_failsWhenOneBatchWriteFails(t *testing.T) {
 	assert.GreaterOrEqual(len(mockDynamoDb.Calls), 3) //3 for the two mocked calls that don't return an error and the remaining mocked call that does return an error
 }
 
-func indexOf(slice []map[string]*dynamodb.AttributeValue, valueToSearchFor map[string]*dynamodb.AttributeValue) int {
+func indexOf(slice []map[string]types.AttributeValue, valueToSearchFor map[string]types.AttributeValue) int {
 	for index, valueInSlice := range slice {
 		if mapsEqual(valueInSlice, valueToSearchFor) {
 			return index
@@ -145,7 +145,7 @@ func indexOf(slice []map[string]*dynamodb.AttributeValue, valueToSearchFor map[s
 	return -1
 }
 
-func mapsEqual(map1 map[string]*dynamodb.AttributeValue, map2 map[string]*dynamodb.AttributeValue) bool {
+func mapsEqual(map1 map[string]types.AttributeValue, map2 map[string]types.AttributeValue) bool {
 	if len(map1) != len(map2) {
 		return false
 	}
@@ -159,19 +159,19 @@ func mapsEqual(map1 map[string]*dynamodb.AttributeValue, map2 map[string]*dynamo
 	return true
 }
 
-func testDynamoDbItems(columnName ...string) []map[string]*dynamodb.AttributeValue {
+func testDynamoDbItems(columnName ...string) []map[string]types.AttributeValue {
 	sliceCapacity := 128
 	columnNameToUse := "dogcowColumn"
 	if len(columnName) > 0 {
 		columnNameToUse = columnName[0]
 	}
 
-	sliceOfDynamoDbitems := make([]map[string]*dynamodb.AttributeValue, 0, sliceCapacity)
+	sliceOfDynamoDbitems := make([]map[string]types.AttributeValue, 0, sliceCapacity)
 
 	for itemIndex := 0; itemIndex < sliceCapacity; itemIndex++ {
-		sliceOfDynamoDbitems = append(sliceOfDynamoDbitems, map[string]*dynamodb.AttributeValue{
-			columnNameToUse: {
-				S: aws.String(fmt.Sprintf("moof%d", itemIndex)),
+		sliceOfDynamoDbitems = append(sliceOfDynamoDbitems, map[string]types.AttributeValue{
+			columnNameToUse: &types.AttributeValueMemberS{
+				Value: fmt.Sprintf("moof%d", itemIndex),
 			},
 		})
 	}
