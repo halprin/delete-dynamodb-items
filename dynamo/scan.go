@@ -156,14 +156,19 @@ func convertRawAttributeValues(rawAttributeValue map[string]interface{}) (types.
 
 	value, ok = rawAttributeValue["BS"]
 	if ok {
-		valueListOfStrings, ok := value.([]string)
+		valueList, ok := value.([]interface{})
 		if !ok {
-			return nil, errors.New("BS attribute value is not a valueListOfBytes of strings")
+			return nil, errors.New("BS attribute value is not a list")
 		}
 
-		valueListOfBytes := make([][]byte, len(valueListOfStrings))
-		for index, item := range valueListOfStrings {
-			bytes, err := base64.StdEncoding.DecodeString(item)
+		valueListOfBytes := make([][]byte, len(valueList))
+		for index, item := range valueList {
+			itemStrings, ok := item.(string)
+			if !ok {
+				return nil, errors.New("BS attribute value's sub-value is not a string")
+			}
+
+			bytes, err := base64.StdEncoding.DecodeString(itemStrings)
 			if err != nil {
 				return nil, err
 			}
