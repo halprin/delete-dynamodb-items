@@ -181,14 +181,19 @@ func convertRawAttributeValues(rawAttributeValue map[string]interface{}) (types.
 
 	value, ok = rawAttributeValue["L"]
 	if ok {
-		valueList, ok := value.([]map[string]interface{})
+		valueList, ok := value.([]interface{})
 		if !ok {
-			return nil, errors.New("L attribute value is not a list of maps from string to something")
+			return nil, errors.New("L attribute value is not a list")
 		}
 
 		list := make([]types.AttributeValue, len(valueList))
 		for index, item := range valueList {
-			attributeValue, err := convertRawAttributeValues(item)
+			subRawAttributeValue, ok := item.(map[string]interface{})
+			if !ok {
+				return nil, errors.New("L attribute value's sub-value is not a map")
+			}
+
+			attributeValue, err := convertRawAttributeValues(subRawAttributeValue)
 			if err != nil {
 				return nil, err
 			}
