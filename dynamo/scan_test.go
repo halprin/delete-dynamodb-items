@@ -476,6 +476,20 @@ func Test_convertRawAttributeValues_M_notMapOfMaps(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func Test_convertRawAttributeValues_noMatchingType(t *testing.T) {
+	expressionAttributeString := `{"P": "DogCow"}`
+
+	rawAttributeValue := make(map[string]interface{})
+	err := json.Unmarshal([]byte(expressionAttributeString), &rawAttributeValue)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal the expression attribute value, %+v", err)
+	}
+
+	_, err = convertRawAttributeValues(rawAttributeValue)
+
+	assert.Error(t, err)
+}
+
 func testChannelOfScanMethodReturnType() chan []map[string]types.AttributeValue {
 	channel := make(chan []map[string]types.AttributeValue)
 
