@@ -1,6 +1,7 @@
 package dynamo
 
 import (
+	"encoding/json"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/stretchr/testify/assert"
@@ -99,6 +100,156 @@ func Test_getItemsGoroutine_expressionAttributeValues(t *testing.T) {
 
 	assert.NotNil(t, goroutine)
 	assert.NotNil(t, scanInputArgument.ExpressionAttributeValues)
+}
+
+func Test_convertRawAttributeValues_N(t *testing.T) {
+	expressionAttributeString := `{"N": "123.45"}`
+
+	rawAttributeValue := make(map[string]interface{})
+	err := json.Unmarshal([]byte(expressionAttributeString), &rawAttributeValue)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal the expression attribute value, %+v", err)
+	}
+
+	attributeValue, err := convertRawAttributeValues(rawAttributeValue)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, attributeValue)
+}
+
+func Test_convertRawAttributeValues_S(t *testing.T) {
+	expressionAttributeString := `{"S": "Hello"}`
+
+	rawAttributeValue := make(map[string]interface{})
+	err := json.Unmarshal([]byte(expressionAttributeString), &rawAttributeValue)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal the expression attribute value, %+v", err)
+	}
+
+	attributeValue, err := convertRawAttributeValues(rawAttributeValue)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, attributeValue)
+}
+
+func Test_convertRawAttributeValues_BOOL(t *testing.T) {
+	expressionAttributeString := `{"BOOL": true}`
+
+	rawAttributeValue := make(map[string]interface{})
+	err := json.Unmarshal([]byte(expressionAttributeString), &rawAttributeValue)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal the expression attribute value, %+v", err)
+	}
+
+	attributeValue, err := convertRawAttributeValues(rawAttributeValue)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, attributeValue)
+}
+
+func Test_convertRawAttributeValues_B(t *testing.T) {
+	expressionAttributeString := `{"B": "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk"}`
+
+	rawAttributeValue := make(map[string]interface{})
+	err := json.Unmarshal([]byte(expressionAttributeString), &rawAttributeValue)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal the expression attribute value, %+v", err)
+	}
+
+	attributeValue, err := convertRawAttributeValues(rawAttributeValue)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, attributeValue)
+}
+
+func Test_convertRawAttributeValues_NULL(t *testing.T) {
+	expressionAttributeString := `{"NULL": true}`
+
+	rawAttributeValue := make(map[string]interface{})
+	err := json.Unmarshal([]byte(expressionAttributeString), &rawAttributeValue)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal the expression attribute value, %+v", err)
+	}
+
+	attributeValue, err := convertRawAttributeValues(rawAttributeValue)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, attributeValue)
+}
+
+func Test_convertRawAttributeValues_SS(t *testing.T) {
+	expressionAttributeString := `{"SS": ["Giraffe", "Hippo" ,"Zebra"]}`
+
+	rawAttributeValue := make(map[string]interface{})
+	err := json.Unmarshal([]byte(expressionAttributeString), &rawAttributeValue)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal the expression attribute value, %+v", err)
+	}
+
+	attributeValue, err := convertRawAttributeValues(rawAttributeValue)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, attributeValue)
+}
+
+func Test_convertRawAttributeValues_NS(t *testing.T) {
+	expressionAttributeString := `{"NS": ["42.2", "-19", "7.5", "3.14"]}`
+
+	rawAttributeValue := make(map[string]interface{})
+	err := json.Unmarshal([]byte(expressionAttributeString), &rawAttributeValue)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal the expression attribute value, %+v", err)
+	}
+
+	attributeValue, err := convertRawAttributeValues(rawAttributeValue)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, attributeValue)
+}
+
+func Test_convertRawAttributeValues_BS(t *testing.T) {
+	expressionAttributeString := `{"BS": ["U3Vubnk=", "UmFpbnk=", "U25vd3k="]}`
+
+	rawAttributeValue := make(map[string]interface{})
+	err := json.Unmarshal([]byte(expressionAttributeString), &rawAttributeValue)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal the expression attribute value, %+v", err)
+	}
+
+	attributeValue, err := convertRawAttributeValues(rawAttributeValue)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, attributeValue)
+}
+
+func Test_convertRawAttributeValues_L(t *testing.T) {
+	expressionAttributeString := `{"L": [ {"S": "Cookies"} , {"S": "Coffee"}, {"N": "3.14159"}]}`
+
+	rawAttributeValue := make(map[string]interface{})
+	err := json.Unmarshal([]byte(expressionAttributeString), &rawAttributeValue)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal the expression attribute value, %+v", err)
+	}
+
+	attributeValue, err := convertRawAttributeValues(rawAttributeValue)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, attributeValue)
+}
+
+func Test_convertRawAttributeValues_M(t *testing.T) {
+	expressionAttributeString := `{"M": {"Name": {"S": "Joe"}, "Age": {"N": "35"}}}`
+
+	rawAttributeValue := make(map[string]interface{})
+	err := json.Unmarshal([]byte(expressionAttributeString), &rawAttributeValue)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal the expression attribute value, %+v", err)
+	}
+
+	attributeValue, err := convertRawAttributeValues(rawAttributeValue)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, attributeValue)
 }
 
 func testChannelOfScanMethodReturnType() chan []map[string]types.AttributeValue {
