@@ -12,8 +12,6 @@ import (
 type expressionAttributeNamesType map[string]string
 type expressionAttributeValuesType map[string]types.AttributeValue
 
-//type expressionAttributeValuesType types.AttributeValueMemberM
-
 func getItemsGoroutine(tableName string, filterExpression *string, expressionAttributeNames *string, expressionAttributeValues *string) chan []map[string]types.AttributeValue {
 
 	var names expressionAttributeNamesType
