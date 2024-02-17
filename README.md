@@ -25,7 +25,7 @@ You can specify a special expression to filter out items you don't want deleted.
 filter matches.  You can learn more about filter expressions in
 [AWS's DynamoDB Developer Guide](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html#Scan.FilterExpression)
 and the
-[`filter-expression` section in the AWS CLI](https://docs.aws.amazon.com/cli/latest/reference/dynamodb/scan.html).
+[`filter-expression` section in the AWS CLI](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/dynamodb/scan.html).
 
 Use a combination of the `--filter-expression=`, `--expression-attribute-names=`, and `--expression-attribute-values=`
 options.  These options work the same way as the options on the AWS CLI.
