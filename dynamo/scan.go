@@ -118,9 +118,18 @@ func convertRawAttributeValues(rawAttributeValue map[string]interface{}) (types.
 
 	value, ok = rawAttributeValue["SS"]
 	if ok {
-		valueListOfStrings, ok := value.([]string)
+		valueList, ok := value.([]interface{})
 		if !ok {
 			return nil, errors.New("SS attribute value is not a list of strings")
+		}
+
+		valueListOfStrings := make([]string, len(valueList))
+		for index, item := range valueList {
+			valueString, ok := item.(string)
+			if !ok {
+				return nil, errors.New("SS attribute value's sub-value is not a string")
+			}
+			valueListOfStrings[index] = valueString
 		}
 
 		return &types.AttributeValueMemberSS{Value: valueListOfStrings}, nil
