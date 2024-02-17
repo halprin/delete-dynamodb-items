@@ -206,12 +206,22 @@ func convertRawAttributeValues(rawAttributeValue map[string]interface{}) (types.
 
 	value, ok = rawAttributeValue["M"]
 	if ok {
-		valueMap, ok := value.(map[string]map[string]interface{})
+		valueMap, ok := value.(map[string]interface{})
 		if !ok {
 			return nil, errors.New("M attribute value is not a map")
 		}
 
-		mappedAttributeValues, err := mapAttributeValues(valueMap)
+		rawMappedAttributeValues := make(map[string]map[string]interface{})
+		for key, valueItem := range valueMap {
+			subRawAttributeValue, ok := valueItem.(map[string]interface{})
+			if !ok {
+				return nil, errors.New("M attribute value's sub-value is not a map")
+			}
+
+			rawMappedAttributeValues[key] = subRawAttributeValue
+		}
+
+		mappedAttributeValues, err := mapAttributeValues(rawMappedAttributeValues)
 		if err != nil {
 			return nil, err
 		}
