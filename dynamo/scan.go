@@ -74,5 +74,14 @@ func convertRawAttributeValues(rawAttributeValue map[string]interface{}) (types.
 		return &types.AttributeValueMemberN{Value: valueString}, nil
 	}
 
+	value, ok = rawAttributeValue["S"]
+	if ok {
+		valueString, ok := value.(string)
+		if !ok {
+			return nil, errors.New("S attribute value is not a string")
+		}
+		return &types.AttributeValueMemberS{Value: valueString}, nil
+	}
+
 	return nil, errors.New("attribute value type didn't match any known types")
 }
