@@ -6,6 +6,10 @@ on:
       - published
 
 
+permissions:
+  contents: write
+
+
 jobs:
   release-linux-windows:
     name: Release for Linux and Windows
@@ -46,7 +50,7 @@ jobs:
           GOOS=darwin GOARCH=arm64 make compile
           mv ./delete-dynamodb-items ./delete-dynamodb-items-arm64
 
-      - name: Compile AMD4
+      - name: Compile AMD64
         run: |
           GOOS=darwin GOARCH=amd64 make compile
           mv ./delete-dynamodb-items ./delete-dynamodb-items-amd64
