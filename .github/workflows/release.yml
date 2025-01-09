@@ -7,16 +7,13 @@ on:
 
 
 jobs:
-  releases-matrix:
-    name: Release Go Binaries
+  release-linux-windows:
+    name: Release for Linux and Windows
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goos: [darwin, linux, windows]
+        goos: [linux, windows]
         goarch: [amd64, arm64]
-        exclude:
-          - goos: windows
-            goarch: arm64
     steps:
 
       - uses: actions/checkout@v4
@@ -30,4 +27,50 @@ jobs:
           project_path: "./cmd/"
           extra_files: README.md LICENSE
           md5sum: FALSE
-          sha256sum: TRUE
+          sha256sum: FALSE
+
+
+  release-macos:
+    name: Release for macOS
+    runs-on: macos-latest
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Compile ARM64
+        run: |
+          GOOS=darwin GOARCH=arm64 make compile
+          mv ./delete-dynamodb-items ./delete-dynamodb-items-arm64
+
+      - name: Compile AMD4
+        run: |
+          GOOS=darwin GOARCH=amd64 make compile
+          mv ./delete-dynamodb-items ./delete-dynamodb-items-amd64
+
+      - name: Universal binary
+        run: lipo -create -output delete-dynamodb-items ./delete-dynamodb-items-arm64 ./delete-dynamodb-items-amd64
+
+      - uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.CERTIFICATES_P12 }}
+          p12-password: ${{ secrets.CERTIFICATES_P12_PASSWORD }}
+
+      - uses: halprin/macos-sign-package-notarize@v1
+        with:
+          path-to-binary: ./delete-dynamodb-items
+          signing-identity: ${{ secrets.SIGNING_IDENTITY }}
+          apple-id: ${{ secrets.APPLE_ID }}
+          app-specific-password: ${{ secrets.APP_SPECIFIC_PASSWORD }}
+          apple-developer-team-id: ${{ secrets.APPLE_DEVELOPER_TEAM_ID }}
+          extra-files: README.md LICENSE
+          archive-disk-name: Delete DynamoDB Items
+          archive-file-path: ./delete-dynamodb-items-${{ github.event.release.tag_name }}-macos.dmg
+
+      - name: Upload Release Asset
+        run: gh release upload ${{ github.event.release.tag_name }} ./delete-dynamodb-items-${{ github.event.release.tag_name }}-macos.dmg --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
