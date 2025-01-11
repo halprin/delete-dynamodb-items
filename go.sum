@@ -534,6 +534,8 @@ github.com/aws/aws-sdk-go-v2/service/dynamodb v1.38.1 h1:AnSNs7Ogi0LXHPMDBx4RE7i
 github.com/aws/aws-sdk-go-v2/service/dynamodb v1.38.1/go.mod h1:J8xqRbx7HIc8ids2P8JbrKx9irONPEYq7Z1FpLDpi3I=
 github.com/aws/aws-sdk-go-v2/service/dynamodb v1.39.0 h1:lyDcdtPv2fS0gbET74N8HVTi0LS9IrE3GV2R1vRi0Cc=
 github.com/aws/aws-sdk-go-v2/service/dynamodb v1.39.0/go.mod h1:J8xqRbx7HIc8ids2P8JbrKx9irONPEYq7Z1FpLDpi3I=
+github.com/aws/aws-sdk-go-v2/service/dynamodb v1.39.2 h1:XcdIh35yg1J8bAiUOLtL/PoPMSGsD72Zanwmim8jEXc=
+github.com/aws/aws-sdk-go-v2/service/dynamodb v1.39.2/go.mod h1:516U/KQM3zdcahNBjHUZKGWNfNnIYyt7sxLeqOx78b0=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.4 h1:/b31bi3YVNlkzkBrm9LfpaKoaYZUxIAj4sHfOTmLfqw=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.4/go.mod h1:2aGXHFmbInwgP9ZfpmdIfOELL79zhdNYNmReK8qDfdQ=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.0 h1:a33HuFlO0KsveiP90IUJh8Xr/cx9US2PqkSroaLc+o8=
@@ -608,6 +610,8 @@ github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.10.6 h1:nbmK
 github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.10.6/go.mod h1:SJhcisfKfAawsdNQoZMBEjg+vyN2lH6rO6fP+T94z5Y=
 github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.10.7 h1:EqGlayejoCRXmnVC6lXl6phCm9R2+k35e0gWsO9G5DI=
 github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.10.7/go.mod h1:BTw+t+/E5F3ZnDai/wSOYM54WUVjSdewE7Jvwtb7o+w=
+github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.10.8 h1:h56mLNgpqWIL7RZOIQO634Xr569bXGTlIE83t/a0LSE=
+github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.10.8/go.mod h1:kK04550Xx95KI0sNmwoB7ciS9QkRwt9TojhoTMXyJdo=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.10.10 h1:DBYTXwIGQSGs9w4jKm60F5dmCQ3EEruxdc0MFh+3EY4=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.10.10/go.mod h1:wohMUQiFdzo0NtxbBg0mSRGZ4vL3n0dKjLTINdcIino=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.0 h1:SHN/umDLTmFTmYfI+gkanz6da3vK8Kvj/5wkqnTHbuA=
