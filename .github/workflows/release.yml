@@ -63,14 +63,14 @@ jobs:
           p12-file-base64: ${{ secrets.CERTIFICATES_P12 }}
           p12-password: ${{ secrets.CERTIFICATES_P12_PASSWORD }}
 
-      - uses: halprin/macos-sign-package-notarize@v1
+      - uses: halprin/macos-sign-package-notarize@v2
         with:
-          path-to-binary: ./delete-dynamodb-items
+          path-to-binaries: ./delete-dynamodb-items
           signing-identity: ${{ secrets.SIGNING_IDENTITY }}
-          apple-id: ${{ secrets.APPLE_ID }}
-          app-specific-password: ${{ secrets.APP_SPECIFIC_PASSWORD }}
-          apple-developer-team-id: ${{ secrets.APPLE_DEVELOPER_TEAM_ID }}
-          extra-files: README.md LICENSE
+          app-store-connect-key: ${{ secrets.MACOS_APP_STORE_CONNECT_KEY }}
+          app-store-connect-key-id: ${{ secrets.MACOS_APP_STORE_CONNECT_KEY_ID }}
+          app-store-connect-issuer-id: ${{ secrets.MACOS_APP_STORE_CONNECT_ISSUER_ID }}
+          archive-files: ./delete-dynamodb-items README.md LICENSE
           archive-disk-name: Delete DynamoDB Items
           archive-file-path: ./delete-dynamodb-items-${{ github.event.release.tag_name }}-macos.dmg
 
