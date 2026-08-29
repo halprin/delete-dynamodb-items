@@ -1466,6 +1466,8 @@ github.com/aws/aws-sdk-go-v2/service/dynamodb v1.63.4 h1:po1aTwrJKV0sLaPzvOmHlW9
 github.com/aws/aws-sdk-go-v2/service/dynamodb v1.63.4/go.mod h1:zLWRn5gabNbj8VT59XrgICjxlCtKeb8XUx4KrLhV01M=
 github.com/aws/aws-sdk-go-v2/service/dynamodb v1.63.5 h1:wwep1P9i7Y/a4XoQ7a56z08qz5nKMpVkNEu+PP2jqB0=
 github.com/aws/aws-sdk-go-v2/service/dynamodb v1.63.5/go.mod h1:Rbn2ajdtNJUAyT6usnf8H2Ce2gJRXUn59VunT7WHUv4=
+github.com/aws/aws-sdk-go-v2/service/dynamodb v1.64.0 h1:lcuNsR2eQT2X/z9nMnWpsuEM5Aty1sE5OVd0FYPND4k=
+github.com/aws/aws-sdk-go-v2/service/dynamodb v1.64.0/go.mod h1:hZmZa5L5yWCqF5W6g7oLUjOlUL4Cr4W2GoE/fwnkGHs=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.4 h1:/b31bi3YVNlkzkBrm9LfpaKoaYZUxIAj4sHfOTmLfqw=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.4/go.mod h1:2aGXHFmbInwgP9ZfpmdIfOELL79zhdNYNmReK8qDfdQ=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.0 h1:a33HuFlO0KsveiP90IUJh8Xr/cx9US2PqkSroaLc+o8=
@@ -1686,6 +1688,8 @@ github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.12.15 h1:I8t
 github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.12.15/go.mod h1:cIYnGuVFa0DBY0Mq4/VPPcD9GdvYHBdMwHK3HE5RDRc=
 github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.12.16 h1:+gyp0vJ16wa66r9sWLkMwDyIa9InZCE0m0kF/yNap8M=
 github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.12.16/go.mod h1:55cSb9T0HNlS12RPOuRZqVmFpo3wbhFoc21Fgpf430k=
+github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.12.17 h1:mA+kaGdCSZJJ4Ky4iRpys/nPQb5z6yudDDMt/Qhzl6c=
+github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.12.17/go.mod h1:IaH0YDae4jwXqHF1oqR9Lgg6nlYagIvd3S0KBLhwqEY=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.10.10 h1:DBYTXwIGQSGs9w4jKm60F5dmCQ3EEruxdc0MFh+3EY4=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.10.10/go.mod h1:wohMUQiFdzo0NtxbBg0mSRGZ4vL3n0dKjLTINdcIino=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.0 h1:SHN/umDLTmFTmYfI+gkanz6da3vK8Kvj/5wkqnTHbuA=
