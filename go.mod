@@ -7,7 +7,7 @@ toolchain go1.27.4
 require (
 	github.com/aws/aws-sdk-go-v2 v1.48.0
 	github.com/aws/aws-sdk-go-v2/config v1.33.19
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.74.0
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.74.1
 	github.com/stretchr/testify v1.12.1
 	github.com/teris-io/cli v1.0.1
 )
